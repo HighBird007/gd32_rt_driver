@@ -298,14 +298,14 @@ int pin_read(struct rt_device *device, rt_base_t pin)
     return gpio_input_bit_get(index->gpio_periph, index->pin);
 }
 //"PA.5"
-rt_base_t pin_get_index(char *name)
+rt_base_t pin_get_index(const char *name)
 {
     uint8_t a = name[1] - 'A';
     uint8_t pin = atoi(&name[3]);
     return a * 16 + pin;
 }
 
-rt_err_t pin_attach_irq(struct rt_device *device, rt_int32_t pin, rt_uint32_t mode, void (*hdr)(void *args), void *args)
+rt_err_t pin_attach_irq(struct rt_device *device, rt_base_t pin, rt_uint32_t mode, void (*hdr)(void *args), void *args)
 {
     rt_base_t level = rt_hw_interrupt_disable();
     const pin_ *index = &pins[pin];
@@ -315,15 +315,18 @@ rt_err_t pin_attach_irq(struct rt_device *device, rt_int32_t pin, rt_uint32_t mo
     tab[i].hdr = hdr;
     tab[i].args = args;
     rt_hw_interrupt_enable(level);
+    rt_kprintf("attach mode %d\n",tab[i].mode);
     return RT_EOK;
 }
 
 rt_err_t pin_irq_enable(struct rt_device *device, rt_base_t pin, rt_uint32_t enabled){
+
         uint8_t level = rt_hw_interrupt_disable();
         const pin_ *index = &pins[pin];
-        uint8_t i = bit2bitno(pin);
+        uint8_t i = bit2bitno(index->pin);
         if(enabled == PIN_IRQ_ENABLE){
             uint32_t irq_mode = tab[i].mode;
+                       rt_kprintf("enable mode %d %d\n",i,irq_mode);
             switch (irq_mode)
             {
             case PIN_IRQ_MODE_FALLING:
@@ -418,7 +421,7 @@ void EXTI5_9_IRQHandler(void)
     rt_interrupt_enter();
     for(uint8_t i = 5 ; i <= 9 ;i++){
         if(exti_interrupt_flag_get(1<<i)){
-            GD32_GPIO_EXTI_IRQHandler(5);
+            GD32_GPIO_EXTI_IRQHandler(i);
         }
     }
     rt_interrupt_leave();
@@ -429,7 +432,7 @@ void EXTI10_15_IRQHandler(void)
     rt_interrupt_enter();
     for(uint8_t i = 10 ; i <= 15 ;i++){
         if(exti_interrupt_flag_get(1<<i)){
-            GD32_GPIO_EXTI_IRQHandler(5);
+            GD32_GPIO_EXTI_IRQHandler(i);
         }
     }
     rt_interrupt_leave();

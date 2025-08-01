@@ -12,25 +12,29 @@
 #include <rtthread.h>
 #include "gd32f4xx.h"
 #include "rtdevice.h"
-
+#include "gd32f4xx_exti.h"
+#include "rthw.h"
+#include <stdlib.h>
 
 #define GD32_PIN(index, port, pin) {index, RCU_GPIO##port,      \
                                     GPIO##port, GPIO_PIN_##pin, \
                                     EXTI_SOURCE_GPIO##port,     \
                                     EXTI_SOURCE_PIN##pin}
 
-typedef struct{
+typedef struct
+{
     rt_uint8_t index;
     rcu_periph_enum clk;
     uint32_t gpio_periph;
     uint32_t pin;
     rt_uint8_t port_src;
     rt_uint8_t pin_src;
-}pin_;
+} pin_;
 
-typedef struct{
+typedef struct
+{
     uint32_t pin;
     IRQn_Type type;
-}pin_irq_map;
+} pin_irq_map;
 
 #endif /* DRIVERS_DRV_GPIO_H_ */
